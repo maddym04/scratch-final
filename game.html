@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arcane Word Guessing Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background-color: #0c0d25;
+      color: #fff;
+    }
+
+    h1 {
+      margin-top: 20px;
+      color: #5bdeff;
+    }
+
+    .word-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 60px);
+      gap: 10px;
+      justify-content: center;
+      margin-top: 50px;
+    }
+
+    .cell {
+      width: 60px;
+      height: 60px;
+      background-color: #444;
+      border: 2px solid #ccc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .cell.correct {
+      background-color: #2ecc71;
+    }
+
+    .cell.wrong-position {
+      background-color: #f39c12;
+    }
+
+    .cell.incorrect {
+      background-color: #e74c3c;
+    }
+
+    .attempts {
+      margin-top: 30px;
+      font-size: 18px;
+    }
+
+    input {
+      padding: 10px;
+      margin-top: 20px;
+      font-size: 16px;
+      color: #333;
+      border: 2px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      padding: 10px;
+      margin-top: 10px;
+      background-color: #c83dff;
+      border: none;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #8cff9f;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Arcane Word Game</h1>
+
+  <div class="word-grid">
+    <!-- 6 rows, 5 columns for each guess -->
+    <div class="cell" id="row-1-col-1"></div>
+    <div class="cell" id="row-1-col-2"></div>
+    <div class="cell" id="row-1-col-3"></div>
+    <div class="cell" id="row-1-col-4"></div>
+    <div class="cell" id="row-1-col-5"></div>
+    <div class="cell" id="row-2-col-1"></div>
+    <div class="cell" id="row-2-col-2"></div>
+    <div class="cell" id="row-2-col-3"></div>
+    <div class="cell" id="row-2-col-4"></div>
+    <div class="cell" id="row-2-col-5"></div>
+    <div class="cell" id="row-3-col-1"></div>
+    <div class="cell" id="row-3-col-2"></div>
+    <div class="cell" id="row-3-col-3"></div>
+    <div class="cell" id="row-3-col-4"></div>
+    <div class="cell" id="row-3-col-5"></div>
+    <div class="cell" id="row-4-col-1"></div>
+    <div class="cell" id="row-4-col-2"></div>
+    <div class="cell" id="row-4-col-3"></div>
+    <div class="cell" id="row-4-col-4"></div>
+    <div class="cell" id="row-4-col-5"></div>
+    <div class="cell" id="row-5-col-1"></div>
+    <div class="cell" id="row-5-col-2"></div>
+    <div class="cell" id="row-5-col-3"></div>
+    <div class="cell" id="row-5-col-4"></div>
+    <div class="cell" id="row-5-col-5"></div>
+    <div class="cell" id="row-6-col-1"></div>
+    <div class="cell" id="row-6-col-2"></div>
+    <div class="cell" id="row-6-col-3"></div>
+    <div class="cell" id="row-6-col-4"></div>
+    <div class="cell" id="row-6-col-5"></div>
+  </div>
+
+  <div class="attempts">Attempts: <span id="attempts-count">0</span>/6</div>
+
+  <input type="text" id="guess-input" maxlength="5" placeholder="Enter a 5-letter word">
+  <button onclick="submitGuess()">Submit Guess</button>
+  <button onclick="restartGame()">Restart Game</button>
+
+  <script>
+    const words = ['jayce', 'silco', 'magic', 'fight', 'blimp', 'power', 'cakes', 'boxer', 'roses'];
+    let wordToGuess;
+    let attempts = 0;
+    const maxAttempts = 6;
+    const guessedWords = [];
+
+    // Start or restart the game
+    function startGame() {
+      wordToGuess = words[Math.floor(Math.random() * words.length)];
+      attempts = 0;
+      guessedWords.length = 0; // clear previous guesses
+      updateAttemptCount();
+      resetGrid();
+    }
+
+    // Function to handle guess submission
+    function submitGuess() {
+      const guessInput = document.getElementById('guess-input');
+      const guess = guessInput.value.toLowerCase();
+      if (guess.length !== 5 || !/^[a-z]+$/.test(guess)) {
+        alert("Please enter a valid 5-letter word.");
+        return;
+      }
+
+      if (guessedWords.includes(guess)) {
+        alert("You've already guessed that word.");
+        return;
+      }
+
+      if (attempts >= maxAttempts) {
+        alert("You've used all attempts! The word was: " + wordToGuess);
+        return;
+      }
+
+      guessedWords.push(guess);
+      attempts++;
+      updateAttemptCount();
+      displayGuessFeedback(guess);
+      guessInput.value = '';
+
+      if (guess === wordToGuess) {
+        alert("Congratulations! You've guessed the word!");
+        return;
+      }
+
+      if (attempts === maxAttempts) {
+        alert("Game over! The word was: " + wordToGuess);
+      }
+    }
+
+    function updateAttemptCount() {
+      document.getElementById('attempts-count').innerText = attempts;
+    }
+
+    function displayGuessFeedback(guess) {
+      const row = attempts; // the row to fill
+      const feedback = getFeedback(guess);
+
+      for (let i = 0; i < 5; i++) {
+        const cell = document.getElementById(`row-${row}-col-${i + 1}`);
+        cell.innerText = guess[i].toUpperCase();
+        cell.classList.remove('correct', 'wrong-position', 'incorrect');
+        cell.classList.add(feedback[i]);
+      }
+    }
+
+    function getFeedback(guess) {
+      const feedback = [];
+      for (let i = 0; i < 5; i++) {
+        if (guess[i] === wordToGuess[i]) {
+          feedback.push('correct');
+        } else if (wordToGuess.includes(guess[i])) {
+          feedback.push('wrong-position');
+        } else {
+          feedback.push('incorrect');
+        }
+      }
+      return feedback;
+    }
+
+    function resetGrid() {
+      for (let row = 1; row <= 6; row++) {
+        for (let col = 1; col <= 5; col++) {
+          const cell = document.getElementById(`row-${row}-col-${col}`);
+          cell.innerText = '';
+          cell.classList.remove('correct', 'wrong-position', 'incorrect');
+        }
+      }
+    }
+
+    // Restart the game
+    function restartGame() {
+      startGame();
+      document.getElementById('guess-input').value = '';
+    }
+
+    // Start the first game when the page loads
+    window.onload = startGame;
+  </script>
+
+</body>
+</html>
